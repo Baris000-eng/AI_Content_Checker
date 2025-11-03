@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Content Detector</h1>
+        <p>Check if the content is AI-generated or human-written</p>
+
+        <!-- Text input area -->
+        <textarea id="content" placeholder="Paste text here..." rows="6"></textarea>
+
+        <!-- File input section -->
+        <p>Or upload a file (.txt, .pdf, .docx):</p>
+        <input type="file" id="fileInput">
+
+        <!-- Button to trigger prediction -->
+        <button id="checkBtn">Check</button>
+
+        <!-- Results will be displayed here -->
+        <div id="result"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
