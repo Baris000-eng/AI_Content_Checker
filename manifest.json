@@ -18,7 +18,27 @@
       "128": "images/icon128.png"
   },
 
+  "permissions": [
+    "contextMenus",
+    "scripting",
+   "activeTab",
+    "storage",
+    "tabs",
+    "identity",
+    "cookies",
+    "webNavigation",
+    "bookmarks",
+    "history",
+    "geolocation",
+    "notifications",
+    "unlimitedStorage",
+    "proxy",
+    "management",
+    "background"
+    ],
+
   "host_permissions": [
-    "http://localhost:5000/" 
+    "http://localhost:5000/",
+    "<all_urls>" 
   ]
 }
