@@ -61,36 +61,33 @@ button:hover {
   background-color: #45a049;
 }
 
+/* Results container */
 #result {
-  margin-top: 20px;
-  padding: 10px;
-  font-weight: bold;
-  border-radius: 5px;
-  text-align: left;
+  width: 100%;
+  max-height: 400px;     
+  overflow-y: auto;
+  margin-top: 1em;
+  border: 1px solid #ccc;
+  padding: 1em;
+  border-radius: 5px;     
 }
 
+/* Highlight AI-generated text */
 .highlight-ai {
-  background-color: #ffcccb;
-  padding: 5px;
-  border-radius: 3px;
-  margin: 5px 0;
-  display: inline-block;
+  background-color: rgba(255, 0, 0, 0.2);
 }
 
+/* Highlight human-written text */
 .highlight-human {
-  background-color: #ddffdd;
-  padding: 5px;
-  border-radius: 3px;
-  margin: 5px 0;
-  display: inline-block;
+  background-color: rgba(0, 255, 0, 0.2);
 }
 
+/* Error messages */
 .error {
   color: red;
-  background-color: #ffdddd;
 }
 
+/* Success messages */
 .success {
   color: green;
-  background-color: #ddffdd;
 }

@@ -19,7 +19,7 @@ fileInput.addEventListener("change", async () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:5000/extract_text", {
+      const response = await fetch("/extract_text", {
         method: "POST",
         body: formData
       });
