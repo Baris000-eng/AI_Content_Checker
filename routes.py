@@ -4,8 +4,10 @@ import file_utils
 import ai_model
 from werkzeug.utils import secure_filename
 import config
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config['UPLOAD_FOLDER'] = config.UPLOAD_FOLDER
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -20,11 +22,6 @@ def split_into_chunks(text, chunk_size=300):
     if text:
         chunks.append(text)
     return chunks
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/predict", methods=["POST"])
 def predict():
     text = request.form.get("text", "").strip()
@@ -53,3 +50,27 @@ def predict():
         })
 
     return jsonify(result)
+
+
+@app.route("/extract_text", methods=["POST"])
+def extract_text_route():
+    file = request.files.get("file")
+    if not file or not file_utils.allowed_file(file.filename):
+        return jsonify({"error": "No valid file uploaded"}), 400
+
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+    try:
+        text = file_utils.extract_text(filepath)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        os.remove(filepath)
+
+    return jsonify({"text": text})
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")

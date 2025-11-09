@@ -1,3 +1,40 @@
+// 1️⃣ File input listener: fills textarea when a file is selected
+const fileInput = document.getElementById("fileInput");
+const textarea = document.getElementById("content");
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const ext = file.name.split(".").pop().toLowerCase();
+
+  if (ext === "txt") {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      textarea.value = e.target.result;
+    };
+    reader.readAsText(file);
+  } else {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:5000/extract_text", {
+        method: "POST",
+        body: formData
+      });
+      const data = await response.json();
+      if (data.error) {
+        textarea.value = `Error extracting text: ${data.error}`;
+      } else {
+        textarea.value = data.text;
+      }
+    } catch (err) {
+      textarea.value = `Error: ${err.message}`;
+    }
+  }
+});
+
 document.getElementById("checkBtn").addEventListener("click", async () => {
   const text = document.getElementById("content").value.trim();
   const fileInput = document.getElementById("fileInput");
@@ -24,7 +61,7 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 
   try {
     // Make the POST request to the Flask backend
-    const response = await fetch("http://localhost:5000/predict", {
+    const response = await fetch("/predict", { 
       method: "POST",
       body: formData
     });
