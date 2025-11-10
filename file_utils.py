@@ -1,15 +1,17 @@
 import os
 from PyPDF2 import PdfReader
 import docx
-from werkzeug.utils import secure_filename
 import config
+import pytesseract 
+from pdf2image import convert_from_path
+
 
 def allowed_file(filename):
     """ Check if the uploaded file has a valid extension """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in config.ALLOWED_EXTENSIONS
 
 def extract_text(file_path):
-    """Extract text from uploaded files (.pdf, .docx, .txt) safely"""
+    """Extract text from uploaded files (.pdf, .docx, .txt), including scanned PDFs"""
     ext = file_path.rsplit('.', 1)[1].lower()
     text = ""
 
@@ -19,13 +21,20 @@ def extract_text(file_path):
                 text = f.read()
 
         elif ext == 'pdf':
+            # Try normal PDF text extraction
             reader = PdfReader(file_path)
             for page in reader.pages:
                 page_text = page.extract_text()
                 if page_text:
                     text += page_text + "\n"
 
-        elif ext == 'docx' or ext == "doc":
+            # If no text found, fallback to OCR (scanned PDF)
+            if not text.strip():
+                pages = convert_from_path(file_path)
+                for page in pages:
+                    text += pytesseract.image_to_string(page) + "\n"
+
+        elif ext in ('docx', 'doc'):
             doc = docx.Document(file_path)
             text = "\n".join([para.text for para in doc.paragraphs])
 

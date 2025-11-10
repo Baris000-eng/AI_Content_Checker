@@ -19,7 +19,7 @@ fileInput.addEventListener("change", async () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("/extract_text", {
+      const response = await fetch("/extract-text", {
         method: "POST",
         body: formData
       });
@@ -60,7 +60,6 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
   }
 
   try {
-    // Make the POST request to the Flask backend
     const response = await fetch("/predict", { 
       method: "POST",
       body: formData

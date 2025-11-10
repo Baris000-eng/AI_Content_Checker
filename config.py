@@ -1,7 +1,6 @@
 import os
 
 # Flask upload settings
-UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'docx'}
 
 # Model settings

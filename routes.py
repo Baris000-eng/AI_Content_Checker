@@ -8,8 +8,6 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-app.config['UPLOAD_FOLDER'] = config.UPLOAD_FOLDER
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def split_into_chunks(text, chunk_size=300):
     """ Split text into smaller chunks (default size is 300 characters) """
@@ -22,53 +20,32 @@ def split_into_chunks(text, chunk_size=300):
     if text:
         chunks.append(text)
     return chunks
-@app.route("/predict", methods=["POST"])
-def predict():
+
+@app.route("/extract-text", methods=["POST"])
+def extract_text():
     text = request.form.get("text", "").strip()
     file = request.files.get("file")
 
     if file and file_utils.allowed_file(file.filename):
+        # Keep original filename (user's file name)
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-        text = file_utils.extract_text(filepath)
-        os.remove(filepath)  # Optional: remove the uploaded file after extracting text
+
+        # Extract text directly from the in-memory file
+        text = file_utils.extract_text(file)
+
+        # You can't really get the user's full system path due to browser security
+        # So you can return just the filename
+        return jsonify({
+            "text": text,
+            "filename": filename
+        })
+
     elif not text:
         return jsonify({"error": "No text or file provided"}), 400
 
-    # Split text into chunks and predict for each chunk
-    chunks = split_into_chunks(text)
-    predictions = ai_model.predict_chunks(chunks)
+    # Only text provided
+    return jsonify({"text": text, "filename": None})
 
-    # Prepare the response with chunks and their probabilities
-    result = []
-    for i, (ai_prob, human_prob) in enumerate(predictions):
-        result.append({
-            'chunk': chunks[i],
-            'ai_prob': round(ai_prob * 100, 2),  # Convert to percentage
-            'human_prob': round(human_prob * 100, 2)  # Convert to percentage
-        })
-
-    return jsonify(result)
-
-
-@app.route("/extract_text", methods=["POST"])
-def extract_text_route():
-    file = request.files.get("file")
-    if not file or not file_utils.allowed_file(file.filename):
-        return jsonify({"error": "No valid file uploaded"}), 400
-
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    file.save(filepath)
-    try:
-        text = file_utils.extract_text(filepath)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        os.remove(filepath)
-
-    return jsonify({"text": text})
 
 
 @app.route("/")
