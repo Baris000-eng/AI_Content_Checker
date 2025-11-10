@@ -106,8 +106,8 @@ checkBtn.addEventListener("click", async () => {
 
       chunkDiv.innerHTML = `
         <p>${chunkText}</p>
-        <p><strong>AI Generated Probability:</strong> ${(item.ai_prob * 100).toFixed(2)}%</p>
-        <p><strong>Human Written Probability:</strong> ${(item.human_prob * 100).toFixed(2)}%</p>
+        <p>AI Generated Probability: ${(item.ai_prob * 100)}%</p>
+        <p>Human Written Probability: ${(item.human_prob * 100)}%</p>
       `;
 
       resultDiv.appendChild(chunkDiv);
