@@ -19,7 +19,7 @@ fileInput.addEventListener("change", async () => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("/extract-text", {
+      const response = await fetch("/extract-text-from-file-or-plain-text", {
         method: "POST",
         body: formData
       });
@@ -95,11 +95,9 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
         chunkText = `<span class="highlight-human">${chunkText}</span>`;
       }
 
-      chunkDiv.innerHTML = `
-        <p>${chunkText}</p>
-        <p><strong>AI Generated Probability:</strong> ${item.ai_prob.toFixed(2)}%</p>
-        <p><strong>Human Written Probability:</strong> ${item.human_prob.toFixed(2)}%</p>
-      `;
+      chunkDiv.innerHTML = '<p>' + chunkText + '</p>' +
+      '<p><strong>AI Generated Probability:</strong> ' + (item.ai_prob * 100) +    '%</p>' +
+      '<p><strong>Human Written Probability:</strong> ' + (item.human_prob * 100) + '%</p>';
 
       // Append the chunk div to the result div
       resultDiv.appendChild(chunkDiv);

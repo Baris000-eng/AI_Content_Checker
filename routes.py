@@ -3,8 +3,9 @@ import os
 import file_utils
 import ai_model
 from werkzeug.utils import secure_filename
-import config
 from flask_cors import CORS
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 app = Flask(__name__)
 CORS(app)
@@ -21,8 +22,8 @@ def split_into_chunks(text, chunk_size=300):
         chunks.append(text)
     return chunks
 
-@app.route("/extract-text", methods=["POST"])
-def extract_text():
+@app.route("/extract-text-from-file-or-plain-text", methods=["POST"])
+def extract_text_from_file_or_plain_text():
     text = request.form.get("text", "").strip()
     file = request.files.get("file")
 
@@ -46,6 +47,35 @@ def extract_text():
     # Only text provided
     return jsonify({"text": text, "filename": None})
 
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    text = request.form.get("text", "").strip()
+    file = request.files.get("file")
+
+    if not text and not file:
+        return jsonify({"error": "No text or file provided"}), 400
+
+    # Extract text from file if uploaded
+    if file and file_utils.allowed_file(file.filename):
+        text = file_utils.extract_text(file)
+
+    # Split text into chunks
+    chunks = split_into_chunks(text)
+
+    # Predict AI/human probabilities for all chunks at once
+    predictions = ai_model.predict_chunks(chunks)
+
+    # Prepare JSON response
+    results = []
+    for chunk, (ai_prob, human_prob) in zip(chunks, predictions):
+        results.append({
+            "chunk": chunk,
+            "ai_prob": ai_prob,
+            "human_prob": human_prob
+        })
+
+    return jsonify(results)
 
 
 @app.route("/")

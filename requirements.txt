@@ -6,6 +6,7 @@ python-docx
 werkzeug
 flask-cors
 pdf2image
-pytesseract
+easyocr
+numpy==1.26.4
 
 

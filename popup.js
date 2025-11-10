@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(data => {
       // Display the result from the server
       const scorePercent = (data.score * 100).toFixed(0);
-      resultDiv.textContent = `Result: ${scorePercent}% ${data.prediction}`;
+      resultDiv.textContent = `Result: ${scorePercent} ${data.prediction}`;
       
       // Change color based on result
       if (data.prediction === "AI") {
