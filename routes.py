@@ -32,8 +32,6 @@ def extract_text_from_file_or_plain_text():
         # Extract text directly from the in-memory file
         text = file_utils.extract_text(file)
 
-        # You can't really get the user's full system path due to browser security
-        # So you can return just the filename
         return jsonify({
             "text": text,
             "filename": filename

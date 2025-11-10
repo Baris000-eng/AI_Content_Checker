@@ -44,6 +44,7 @@ input[type="file"] {
   margin: 10px 0;
   padding: 10px;
   font-size: 1em;
+  width: 100%; 
 }
 
 button {
@@ -82,12 +83,19 @@ button:hover {
   background-color: rgba(0, 255, 0, 0.2);
 }
 
-/* Error messages */
 .error {
   color: red;
 }
 
-/* Success messages */
 .success {
   color: green;
+}
+
+#loadingLabel {
+  font-size: 14px;
+  color: #888;
+  margin-top: 10px;
+  font-style: italic;
+  text-align: center;
+  display: none;
 }

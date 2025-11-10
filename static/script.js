@@ -1,20 +1,34 @@
-// 1️⃣ File input listener: fills textarea when a file is selected
 const fileInput = document.getElementById("fileInput");
 const textarea = document.getElementById("content");
+const resultDiv = document.getElementById("result");
+const checkBtn = document.getElementById("checkBtn");
+
+let fileContent = ""; // Store file content
 
 fileInput.addEventListener("change", async () => {
   const file = fileInput.files[0];
   if (!file) return;
 
+  resultDiv.innerHTML = "";  // Clear previous prediction content
+
+  // Display the "Loading document content..." message in the textarea
+  textarea.value = "Loading document content...";  
+  textarea.disabled = true;  // Disable the textarea to prevent editing while loading
+
   const ext = file.name.split(".").pop().toLowerCase();
 
+  // Clear textarea before processing new file
   if (ext === "txt") {
+    // For .txt files, load the content via FileReader
     const reader = new FileReader();
     reader.onload = (e) => {
-      textarea.value = e.target.result;
+      fileContent = e.target.result;
+      textarea.value = fileContent;  // Display content in textarea
+      textarea.disabled = false;  // Re-enable textarea after content is loaded
     };
-    reader.readAsText(file);
+    reader.readAsText(file);  // Read the file as text
   } else {
+    // For non-text files, send them for processing
     const formData = new FormData();
     formData.append("file", file);
 
@@ -23,90 +37,86 @@ fileInput.addEventListener("change", async () => {
         method: "POST",
         body: formData
       });
+
       const data = await response.json();
+
       if (data.error) {
         textarea.value = `Error extracting text: ${data.error}`;
       } else {
-        textarea.value = data.text;
+        fileContent = data.text;
+        textarea.value = fileContent;
       }
+      textarea.disabled = false;  // Re-enable textarea after content is loaded
     } catch (err) {
       textarea.value = `Error: ${err.message}`;
+      textarea.disabled = false;  // Re-enable textarea in case of error
     }
   }
 });
 
-document.getElementById("checkBtn").addEventListener("click", async () => {
-  const text = document.getElementById("content").value.trim();
-  const fileInput = document.getElementById("fileInput");
-  const resultDiv = document.getElementById("result");
+// When the "Check" button is clicked, send the content for prediction
+checkBtn.addEventListener("click", async () => {
+  const text = textarea.value.trim();
+  resultDiv.innerHTML = "";  // Clear previous result
 
-  // Clear previous result
-  resultDiv.innerHTML = "";
-  resultDiv.className = "";  
-
-  // Validate input
-  if (!text && fileInput.files.length === 0) {
+  if (!text) {
     resultDiv.innerText = "Please enter some text or upload a file!";
     resultDiv.className = "error";
     return;
   }
 
-  resultDiv.innerText = "Checking...";
+  resultDiv.innerText = "Checking...";  // Show loading message
 
   const formData = new FormData();
-  formData.append("text", text);
-  if (fileInput.files.length > 0) {
-    formData.append("file", fileInput.files[0]);
-  }
+  formData.append("text", text);  // Append the text from the textarea
 
   try {
-    const response = await fetch("/predict", { 
+    const response = await fetch("/predict", {
       method: "POST",
       body: formData
     });
 
     if (!response.ok) {
-      throw new Error("Failed to get response");
+      throw new Error("Failed to get response from the server");
     }
 
-    // Parse the response JSON
     const data = await response.json();
 
     // Check for errors in the response
     if (data.error) {
-      resultDiv.innerText = "Error: " + data.error;
+      resultDiv.innerText = `Error: ${data.error}`;
       resultDiv.className = "error";
       return;
     }
 
-    // Clear the result div
-    resultDiv.innerHTML = '';
+    // Clear the previous results
+    resultDiv.innerHTML = "";
 
-    // Iterate through the chunks and display them with highlights and probabilities
+    // Display the results for each chunk
     data.forEach(item => {
       const chunkDiv = document.createElement("div");
-
       let chunkText = item.chunk;
 
-      // Highlight AI-generated content
+      // Highlight AI-generated content vs. human-written
       if (item.ai_prob > item.human_prob) {
         chunkText = `<span class="highlight-ai">${chunkText}</span>`;
       } else {
         chunkText = `<span class="highlight-human">${chunkText}</span>`;
       }
 
-      chunkDiv.innerHTML = '<p>' + chunkText + '</p>' +
-      '<p><strong>AI Generated Probability:</strong> ' + (item.ai_prob * 100) +    '%</p>' +
-      '<p><strong>Human Written Probability:</strong> ' + (item.human_prob * 100) + '%</p>';
+      chunkDiv.innerHTML = `
+        <p>${chunkText}</p>
+        <p><strong>AI Generated Probability:</strong> ${(item.ai_prob * 100).toFixed(2)}%</p>
+        <p><strong>Human Written Probability:</strong> ${(item.human_prob * 100).toFixed(2)}%</p>
+      `;
 
-      // Append the chunk div to the result div
       resultDiv.appendChild(chunkDiv);
     });
 
     resultDiv.className = "success";  // Add success styling
 
   } catch (err) {
-    resultDiv.innerText = "Error: " + err.message;
+    resultDiv.innerText = `Error: ${err.message}`;
     resultDiv.className = "error";
   }
 });
