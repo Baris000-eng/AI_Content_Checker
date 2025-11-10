@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify
 import os
 import file_utils
 import ai_model
-from werkzeug.utils import secure_filename
 from flask_cors import CORS
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
@@ -28,8 +27,7 @@ def extract_text_from_file_or_plain_text():
     file = request.files.get("file")
 
     if file and file_utils.allowed_file(file.filename):
-        # Keep original filename (user's file name)
-        filename = secure_filename(file.filename)
+        filename = file.filename 
 
         # Extract text directly from the in-memory file
         text = file_utils.extract_text(file)

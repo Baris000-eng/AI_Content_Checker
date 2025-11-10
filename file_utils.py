@@ -7,7 +7,7 @@ from pdf2image import convert_from_bytes
 import easyocr
 
 # Initialize the EasyOCR reader once 
-reader = easyocr.Reader(['en', 'tr', 'de', 'fr'])  
+ocr_reader = easyocr.Reader(['en', 'tr', 'de', 'fr'])  
 
 
 def allowed_file(filename):
@@ -17,7 +17,7 @@ def allowed_file(filename):
 def extract_text(file):
     """
     Extracts text from uploaded file (.pdf, .docx, .txt).
-    Uses OCR for scanned PDFs.
+    Uses OCR for scanned PDFs or PDFs that fail to extract text.
     """
     filename = file.filename
     ext = filename.rsplit('.', 1)[1].lower()
@@ -25,31 +25,30 @@ def extract_text(file):
 
     try:
         file.stream.seek(0)
-        # ✅ Handle plain text files
+
         if ext == 'txt':
             text = file.read().decode('utf-8', errors='ignore')
-        # ✅ Handle PDFs entirely in memory
-        elif ext == 'pdf':
-            # Try normal text extraction
-            reader = PdfReader(file)
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
 
-            # Fallback to OCR if no text found
-            if text.strip() == "" and len(reader.pages) > 0:
+        elif ext == 'pdf':
+            try:
+                reader = PdfReader(file)
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+            except Exception as e:
+                # If PdfReader fails entirely to extract text from PDF, treat the document 
+                # as a scanned PDF.
+                print(f"[INFO] PdfReader failed, assuming scanned PDF: {e}")
+                file.stream.seek(0)
                 pdf_bytes = file.read()
                 images = convert_from_bytes(pdf_bytes)
                 for img in images:
-                    # Convert PIL image to array for EasyOCR
                     img_array = np.array(img)
-                    result = reader.readtext(img_array, detail=0)  
+                    result = ocr_reader.readtext(img_array, detail=0)
                     text += "\n".join(result) + "\n"
 
-        # ✅ Handle Word documents
         elif ext in ('docx', 'doc'):
-            # docx.Document() requires a file-like object, not bytes
             doc = docx.Document(file)
             text = "\n".join([para.text for para in doc.paragraphs])
 

@@ -3,7 +3,6 @@ torch
 transformers
 PyPDF2
 python-docx
-werkzeug
 flask-cors
 pdf2image
 easyocr
