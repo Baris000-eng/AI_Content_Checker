@@ -1,6 +1,7 @@
 flask
 torch
 transformers
+pillow
 PyPDF2
 PyMuPDF
 fitz 
