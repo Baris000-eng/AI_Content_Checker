@@ -20,25 +20,40 @@ print("\n")
 
 def scrape_content(url):
     try:
-        response = requests.get(url)
-        response.raise_for_status()  # This will raise an HTTPError for bad responses
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        # Target only the meaningful text content: p, h1, h2, h3, div, span, a
-        content = soup.find_all(['p', 'h1', 'h2', 'h3', 'div', 'span', 'a'])
-        
-        # Clean the content: remove empty strings and strip unnecessary whitespace
-        text = " ".join([element.get_text() for element in content if element.get_text().strip() != ''])
+        # Remove unwanted tags BEFORE extraction
+        for tag in soup(['script', 'style', 'footer', 'header', 'nav', 'aside']):
+            tag.decompose()
 
-        print(text) 
-        # Clean up unwanted content like scripts, styles, etc.
-        for script in soup(['script', 'style', 'footer', 'header', 'nav']):
-            script.decompose()
+        # Tags that usually contain meaningful text
+        meaningful_tags = [
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'p', 'li',
+            'div', 'span', 'a',
+            'strong', 'em', 'b', 'i',
+            'article', 'section', 'main'
+        ]
 
-        # Optionally, remove links (if you don't want them in the final text)
-        text = re.sub(r'http\S+', '', text)  # Remove URLs from the text (if any)
+        # Extract text
+        elements = soup.find_all(meaningful_tags)
+
+        text = " ".join(
+            element.get_text(strip=True)
+            for element in elements
+            if element.get_text(strip=True)
+        )
+
+        # Remove URLs inside the scraped text
+        text = re.sub(r'http\S+', '', text)
+
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
 
         return text
+
     except requests.exceptions.RequestException as e:
         print(f"Error fetching URL: {e}")
         return None
@@ -51,8 +66,10 @@ def is_ai_generated(text):
             outputs = model(**inputs)
             probs = F.softmax(outputs.logits, dim=-1)
         
-        ai_prob = probs[0][1].item()  # AI-generated probability
-        human_prob = probs[0][0].item()  # Human-written probability
+        print(probs)
+        
+        ai_prob = probs[0][0].item()  # AI-generated probability
+        human_prob = probs[0][1].item()  # Human-written probability
         
         return ai_prob, human_prob
     
@@ -66,6 +83,7 @@ def main():
     if content:
         # Clean up the text 
         content_cleaned = re.sub(r'\s+', ' ', content.strip())  
+        print(content_cleaned)
         ai_prob, human_prob = is_ai_generated(content_cleaned)
         if ai_prob > human_prob:
             print("This content is likely AI-generated.")

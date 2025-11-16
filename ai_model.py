@@ -17,8 +17,8 @@ def predict_chunks(chunks):
             outputs = model(**inputs)
             probs = F.softmax(outputs.logits, dim=-1)
         
-        ai_prob = probs[0][1].item()  # AI-generated probability
-        human_prob = probs[0][0].item()  # Human-written probability
+        ai_prob = probs[0][0].item()  # AI-generated probability, fake 
+        human_prob = probs[0][1].item()  # Human-written probability, real
         results.append((ai_prob, human_prob))
     
     return results
