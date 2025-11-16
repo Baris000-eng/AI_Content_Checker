@@ -33,7 +33,6 @@ def extract_text_from_file_or_plain_text():
 
         # Extract text directly from the in-memory file
         text = file_utils.extract_text(file)
-        text = text.strip()
 
         return jsonify({
             "text": text,
@@ -54,17 +53,18 @@ def predict():
     text = request.form.get("text", "").strip()
     file = request.files.get("file")
 
+    # Check if the pasted content is a valid URL. If so, parse the URL content. 
+    if validators.url(text):
+        text = scrape_content(text)
+
     if not text and not file:
         return jsonify({"error": "No text or file provided"}), 400
 
     # Extract text from file if uploaded
     if file and file_utils.allowed_file(file.filename):
         text = file_utils.extract_text(file)
-    
-    # Check if the pasted content is a valid URL. If so, parse the URL content. 
-    if validators.url(text):
-        text = scrape_content(text)
 
+    text = text.strip()
 
     # Split text into chunks
     chunks = split_into_chunks(text)
