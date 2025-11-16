@@ -8,6 +8,7 @@ fitz
 tools 
 python-docx
 flask-cors
+validators
 pdf2image
 easyocr
 numpy==1.26.4

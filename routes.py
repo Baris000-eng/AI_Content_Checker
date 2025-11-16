@@ -2,8 +2,10 @@ from flask import Flask, render_template, request, jsonify
 import os
 import file_utils
 import ai_model
+import validators
 from flask_cors import CORS
 import os
+from check_url_content import scrape_content
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 app = Flask(__name__)
@@ -31,6 +33,7 @@ def extract_text_from_file_or_plain_text():
 
         # Extract text directly from the in-memory file
         text = file_utils.extract_text(file)
+        text = text.strip()
 
         return jsonify({
             "text": text,
@@ -41,6 +44,8 @@ def extract_text_from_file_or_plain_text():
         return jsonify({"error": "No text or file provided"}), 400
 
     # Only text provided
+    text = text.strip()
+
     return jsonify({"text": text, "filename": None})
 
 
@@ -55,6 +60,11 @@ def predict():
     # Extract text from file if uploaded
     if file and file_utils.allowed_file(file.filename):
         text = file_utils.extract_text(file)
+    
+    # Check if the pasted content is a valid URL. If so, parse the URL content. 
+    if validators.url(text):
+        text = scrape_content(text)
+
 
     # Split text into chunks
     chunks = split_into_chunks(text)

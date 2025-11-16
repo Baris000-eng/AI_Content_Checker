@@ -9,6 +9,8 @@ from pdf2image import convert_from_bytes
 import easyocr
 import config
 
+
+
 # Initialize the EasyOCR reader once 
 ocr_reader = easyocr.Reader(['en', 'tr', 'de', 'fr'])  
 
