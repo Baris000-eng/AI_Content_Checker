@@ -1,7 +1,8 @@
 import os
 
-# Flask upload settings
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'docx'}
+
+# Allowed extensions of the files to upload
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'docx', 'doc', 'jpg', 'jpeg', 'png', 'tiff', 'gif', 'bmp'}
 
 # Model settings
-MODEL_NAME = "roberta-base-openai-detector"  
+MODEL_NAME = "roberta-base-openai-detector" 
