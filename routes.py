@@ -6,6 +6,7 @@ import validators
 from flask_cors import CORS
 import os
 from check_url_content import scrape_content
+from scrapper import scrap_text
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 app = Flask(__name__)
@@ -55,7 +56,7 @@ def predict():
 
     # Check if the pasted content is a valid URL. If so, parse the URL content. 
     if validators.url(text):
-        text = scrape_content(text)
+        text = scrap_text(text)
 
     if not text and not file:
         return jsonify({"error": "No text or file provided"}), 400

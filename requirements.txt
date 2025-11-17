@@ -11,8 +11,10 @@ flask-cors
 validators
 pdf2image
 easyocr
+bs4
 numpy==1.26.4
-
+selenium
+webdriver-manager
 
 
 
