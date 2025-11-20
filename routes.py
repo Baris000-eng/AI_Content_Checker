@@ -5,24 +5,54 @@ import ai_model
 import validators
 from flask_cors import CORS
 import os
-from check_url_content import scrape_content
 from scrapper import scrap_text
+import re 
+
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 app = Flask(__name__)
 CORS(app)
 
-def split_into_chunks(text, chunk_size=300):
-    """ Split text into smaller chunks (default size is 300 characters) """
-    # You can modify this function to split by sentences or paragraphs
+def split_into_chunks(text, max_chars=None, delimiters=r'[.!?;:]'):
+    """
+    Splits text into meaningful chunks suitable for NLP/processing.
+
+    Args:
+        text (str): Input text (from PDF, OCR, plain text, etc.)
+        max_chars (int, optional): Maximum characters per chunk. Defaults to None.
+        delimiters (str): Regex for sentence delimiters. Defaults to '[.!?;:]'.
+
+    Returns:
+        List[str]: List of text chunks.
+    """
+    # Normalize newlines
+    text = re.sub(r'\r\n|\r', '\n', text)
+    
+    # Split by paragraphs (double newline)
+    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+    
     chunks = []
-    while len(text) > chunk_size:
-        chunk = text[:chunk_size]
-        chunks.append(chunk)
-        text = text[chunk_size:]
-    if text:
-        chunks.append(text)
+    for para in paragraphs:
+        # Split paragraph into sentences
+        sentences = re.split(rf'(?<={delimiters})\s+', para)
+        
+        # Merge sentences into larger chunks if max_chars is set
+        if max_chars:
+            current_chunk = ''
+            for s in sentences:
+                if len(current_chunk) + len(s) + 1 <= max_chars:
+                    current_chunk += ' ' + s if current_chunk else s
+                else:
+                    if current_chunk:
+                        chunks.append(current_chunk.strip())
+                    current_chunk = s
+            if current_chunk:
+                chunks.append(current_chunk.strip())
+        else:
+            chunks.extend([s.strip() for s in sentences if s.strip()])
+    
     return chunks
+
 
 @app.route("/extract-text-from-file-or-plain-text", methods=["POST"])
 def extract_text_from_file_or_plain_text():

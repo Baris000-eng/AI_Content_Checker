@@ -5,12 +5,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import platform
 
 def scrap_text(link):
     options = Options()
 
-    # If Chrome is installed here (adjust if needed)
-    options.binary_location = "/usr/bin/google-chrome"
+    if platform.system() == "Darwin": 
+        options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    elif platform.system() == "Windows": 
+        options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+
+   
     options.add_argument("--headless=new")
 
     driver = webdriver.Chrome(
