@@ -12,11 +12,15 @@ build/
 .venv/
 env/
 venv/
+*.env
 
 # cache files 
 /__pycache__
 /*.cache
 /*.pyc
+
+# Ignore .github folder
+/.github/
 
 
 # Flask-specific files (logs, database files, etc.)
