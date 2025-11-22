@@ -11,7 +11,7 @@ fileInput.addEventListener("change", async () => {
 
   resultDiv.innerHTML = "";  // Clear previous prediction content
 
-  // Display the "Loading document content..." message in the textarea
+  // Display the loading message
   textarea.value = "Loading document content...";  
   textarea.disabled = true;  // Disable the textarea to prevent editing while loading
 

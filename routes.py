@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import os
 import file_utils
 import ai_model
@@ -7,50 +7,45 @@ from flask_cors import CORS
 import os
 from scrapper import scrap_text
 import re 
+from io import BytesIO
+
+
 
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 app = Flask(__name__)
 CORS(app)
+    
 
-def split_into_chunks(text, max_chars=None, delimiters=r'[.!?;:]'):
+def split_into_chunks(text):
     """
-    Splits text into meaningful chunks suitable for NLP/processing.
+    Splits text into meaningful chunks suitable for processing by the AI model. 
+    Paragraph handling is robust to any number of blank lines.
 
     Args:
         text (str): Input text (from PDF, OCR, plain text, etc.)
-        max_chars (int, optional): Maximum characters per chunk. Defaults to None.
-        delimiters (str): Regex for sentence delimiters. Defaults to '[.!?;:]'.
 
     Returns:
-        List[str]: List of text chunks.
+        List[str]: List of sentence chunks.
     """
-    # Normalize newlines
+    import re
+
+    # Normalize all line endings to '\n'
     text = re.sub(r'\r\n|\r', '\n', text)
-    
-    # Split by paragraphs (double newline)
-    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
-    
+
+    # Split on any sequence of blank lines (one or more)
+    paragraphs = re.split(r'\n\s*\n+', text)
+    paragraphs = [p.strip() for p in paragraphs if p.strip()]
+
+    # Define sentence delimiters
+    delimiters = r'[.!?;:]'
+
     chunks = []
     for para in paragraphs:
         # Split paragraph into sentences
         sentences = re.split(rf'(?<={delimiters})\s+', para)
-        
-        # Merge sentences into larger chunks if max_chars is set
-        if max_chars:
-            current_chunk = ''
-            for s in sentences:
-                if len(current_chunk) + len(s) + 1 <= max_chars:
-                    current_chunk += ' ' + s if current_chunk else s
-                else:
-                    if current_chunk:
-                        chunks.append(current_chunk.strip())
-                    current_chunk = s
-            if current_chunk:
-                chunks.append(current_chunk.strip())
-        else:
-            chunks.extend([s.strip() for s in sentences if s.strip()])
-    
+        chunks.extend([s.strip() for s in sentences if s.strip()])
+
     return chunks
 
 
@@ -113,6 +108,8 @@ def predict():
         })
 
     return jsonify(results)
+
+
 
 
 @app.route("/")

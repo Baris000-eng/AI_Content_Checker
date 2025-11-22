@@ -19,13 +19,12 @@ def process_image_for_ocr(file):
     Process image files (PNG, JPG, JPEG, GIF, BMP, TIFF) for OCR extraction.
     Returns the extracted text.
     """
-    ext = file.filename.rsplit('.', 1)[1].lower()
     text = ""
 
     try:
         
         # Open the image using Pillow (for PNG, JPG, JPEG, GIF, BMP, TIFF)
-        img = Image.open(file)
+        img = Image.open(file.stream)
         
         # Convert the image to an RGB format
         img = img.convert('RGB')
@@ -57,6 +56,7 @@ def extract_text(file):
     """
     filename = file.filename
     ext = filename.rsplit('.', 1)[1].lower()
+    print("Extension", ext) 
     text = ""  # This will store the OCR ext output
 
     try:
