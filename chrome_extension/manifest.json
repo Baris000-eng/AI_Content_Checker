@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Sequential P Sender",
+  "version": "1.0",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "ws://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png"
+    }
+  }
+}
