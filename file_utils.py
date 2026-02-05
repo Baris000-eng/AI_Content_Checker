@@ -57,7 +57,7 @@ def extract_text(file):
     filename = file.filename
     ext = filename.rsplit('.', 1)[1].lower()
     print("Extension", ext) 
-    text = ""  # This will store the OCR ext output
+    text = ""  
 
     try:
         # Read the file stream into memory
